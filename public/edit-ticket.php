@@ -1,33 +1,20 @@
 <?php
 
 require_once __DIR__ . "/../config/database.php";
+require_once __DIR__ . "/../src/Repositories/TicketRepository.php";
 
-$ticketId = $_GET["id"] ?? null;
+$ticketRepository = new TicketRepository($pdo);
+
+$ticketId = isset($_GET["id"])
+    ? (int) $_GET["id"]
+    : null;
 
 if (!$ticketId) {
     header("Location: index.php");
     exit;
 }
 
-/*
-|--------------------------------------------------------------------------
-| Buscar la incidencia
-|--------------------------------------------------------------------------
-*/
-
-$sql = "
-    SELECT *
-    FROM tickets
-    WHERE id = :id
-";
-
-$statement = $pdo->prepare($sql);
-
-$statement->execute([
-    "id" => $ticketId
-]);
-
-$ticket = $statement->fetch(PDO::FETCH_ASSOC);
+$ticket = $ticketRepository->findById($ticketId);
 
 if (!$ticket) {
     header("Location: index.php");
@@ -59,25 +46,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if ($error === "") {
 
-        $sqlUpdate = "
-            UPDATE tickets
-            SET
-                title = :title,
-                description = :description,
-                priority = :priority,
-                status = :status
-            WHERE id = :id
-        ";
-
-        $statementUpdate = $pdo->prepare($sqlUpdate);
-
-        $statementUpdate->execute([
-            "title" => $title,
-            "description" => $description,
-            "priority" => $priority,
-            "status" => $status,
-            "id" => $ticketId
-        ]);
+        $ticketRepository->update(
+            $ticketId,
+            $title,
+            $description,
+            $priority,
+            $status
+        );
 
         header("Location: index.php");
         exit;
