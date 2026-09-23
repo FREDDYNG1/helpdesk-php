@@ -2,8 +2,13 @@
 
 require_once __DIR__ . "/../config/database.php";
 require_once __DIR__ . "/../src/Repositories/TicketRepository.php";
+require_once __DIR__ . "/../src/Controllers/TicketController.php";
 
 $ticketRepository = new TicketRepository($pdo);
+
+$ticketController = new TicketController(
+    $ticketRepository
+);
 
 
 $title = "HelpDesk PHP";
@@ -47,7 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $ticketStatus = 'Abierta';
     }
 }
-$tickets = $ticketRepository->findAll();
+$tickets = $ticketController->index();
 
 
 ?>
