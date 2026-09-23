@@ -1,6 +1,10 @@
 <?php
 
 require_once __DIR__ . "/../config/database.php";
+require_once __DIR__ . "/../src/Repositories/TicketRepository.php";
+
+$ticketRepository = new TicketRepository($pdo);
+
 
 $title = "HelpDesk PHP";
 
@@ -27,29 +31,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if ($error === "") {
 
-        $sql = "
-            INSERT INTO tickets (
-                title,
-                description,
-                priority,
-                status
-            )
-            VALUES (
-                :title,
-                :description,
-                :priority,
-                :status
-            )
-        ";
-
-        $statement = $pdo->prepare($sql);
-
-        $statement->execute([
-            "title" => $ticketTitle,
-            "description" => $ticketDescription,
-            "priority" => $ticketPriority,
-            "status" => $ticketStatus
-        ]);
+        $ticketRepository->create(
+            $ticketTitle,
+            $ticketDescription,
+            $ticketPriority,
+            $ticketStatus
+        );
 
         $success = "Incidencia creada correctamente.";
 
@@ -60,16 +47,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $ticketStatus = 'Abierta';
     }
 }
+$tickets = $ticketRepository->findAll();
 
-$sqlTickets = "
-    SELECT *
-    FROM tickets
-    ORDER BY created_at DESC
-";
-
-$statementTickets = $pdo->query($sqlTickets);
-
-$tickets = $statementTickets->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
 
